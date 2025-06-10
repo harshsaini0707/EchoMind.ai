@@ -39,7 +39,13 @@ const AudioSummary = () => {
 
       setSummary(response.data.summary);
     } catch (error) {
-      console.error('Error generating summary:', error);
+      if (error?.response?.status === 401) {
+        return navigate("/login");
+      } else {
+        console.error("Upload failed:", error);
+        alert("Failed to transcribe audio.");
+      }
+
       setSummary('Failed to generate summary. Please try again.');
     } finally {
       setLoading(false);

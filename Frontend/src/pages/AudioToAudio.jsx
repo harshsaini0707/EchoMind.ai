@@ -38,11 +38,11 @@ const convertAudioAPI = async () => {
   formData.append('audio', audioFile);
   formData.append('language', effectiveLanguage); // e.g. 'en', 'hi'
 
- const backendOrigin = 'http://localhost:9090';
+ const backendOrigin = process.meta.env.VITE_BASE_URL;
 
 try {
   const response = await axios.post(
-    'http://localhost:9090/audio/audio-to-audio',
+    `${process.meta.env.VITE_BASE_URL}/audio/audio-to-audio`,
     formData,
     { withCredentials: true }
   );
@@ -62,7 +62,12 @@ try {
     throw new Error('No audio URL returned');
   }
 } catch (error) {
-  alert('Conversion failed: ' + (error.response?.data?.message || error.message));
+if (error?.response?.status === 401) {
+        return navigate("/login");
+      } else {
+        console.error("Upload failed:", error);
+        alert("Failed to transcribe audio.");
+      }
 }
  finally {
     setLoading(false);
