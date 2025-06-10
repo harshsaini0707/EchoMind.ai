@@ -1,12 +1,23 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState , useEffect } from 'react';
 import {
   Upload, Play, Pause, Download, FileAudio, Trash2
 } from 'lucide-react';
 import MainMenu from './MainMenu';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+
 
 const AudioToText = () => {
+   const navigate = useNavigate();
+  const user = useSelector((store)=>store?.user);
+
+
+
+useEffect(() => {
+  if (!user) navigate("/login");
+}, [user, navigate]);
+
   const [file, setFile] = useState(null);
   const [audioURL, setAudioURL] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
@@ -19,7 +30,9 @@ const AudioToText = () => {
 
   const fileInputRef = useRef(null);
   const audioRef = useRef(null);
-  const navigate = useNavigate();
+ 
+
+
 
   const Audio = async () => {
     if (!file) return alert("Please upload an audio file.");
