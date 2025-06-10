@@ -37,6 +37,7 @@ const signup = async (req, res) => {
 
         return res.status(200).json({
             message: `OTP sent to ${email}. Please verify to continue.`,
+            data : newUser
         });
     } catch (error) {
         return res.status(500).json({ message: error.message || "Server Error" });
@@ -64,7 +65,7 @@ const login = async (req, res) => {
 
         await sendEmail(email, "EchoMind Login OTP", `Your login OTP is ${otp}. Valid for 5 minutes.`);
 
-        return res.status(200).json({ message: "OTP sent to your email. Please verify to login." });
+        return res.status(200).json({ message: "OTP sent to your email. Please verify to login." , data: user});
     } catch (error) {
         return res.status(500).json({ message: error.message || "Server Error" });
     }
@@ -83,40 +84,40 @@ const logout = async(req,res)=>{
          return res.status(500).json({message : error.message || "Server Error"})
     }
 }
+// const verifyOTP = async (req, res) => {
+//     try {
+//         const { email, otp } = req.body;
+
+//         const user = await User.findOne({ email });
+
+//         if (!user) return res.status(404).json({ message: "User not found" });
+
+//         if (user.otp !== otp || Date.now() > user.ExpiryOtp) {
+//             return res.status(400).json({ message: "Invalid or expired OTP" });
+//         }
+
+//         user.isVerified = true;
+//         user.otp = null;
+//         user.ExpiryOtp = null;
+
+//         await user.save();
+
+//         const token = await user.getJWT();
+
+//         res.cookie("token", token, {
+//             httpOnly: true,
+//             secure: true,
+//             sameSite: "None",
+//             maxAge: 7 * 24 * 60 * 60 * 1000,
+//         });
+
+//         return res.status(200).json({ message: "Email verified successfully", data: user });
+//     } catch (error) {
+//         return res.status(500).json({ message: error.message || "Server Error" });
+//     }
+// };
+
 const verifyOTP = async (req, res) => {
-    try {
-        const { email, otp } = req.body;
-
-        const user = await User.findOne({ email });
-
-        if (!user) return res.status(404).json({ message: "User not found" });
-
-        if (user.otp !== otp || Date.now() > user.ExpiryOtp) {
-            return res.status(400).json({ message: "Invalid or expired OTP" });
-        }
-
-        user.isVerified = true;
-        user.otp = null;
-        user.ExpiryOtp = null;
-
-        await user.save();
-
-        const token = await user.getJWT();
-
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-
-        return res.status(200).json({ message: "Email verified successfully", data: user });
-    } catch (error) {
-        return res.status(500).json({ message: error.message || "Server Error" });
-    }
-};
-
-const verifyLoginOTP = async (req, res) => {
     try {
         const { email, otp } = req.body;
 
@@ -144,7 +145,7 @@ const verifyLoginOTP = async (req, res) => {
         const { password: _, ...userData } = user.toObject();
 
         return res.status(200).json({
-            message: `Welcome back ${user.firstName}`,
+            message: `Welcome ${user.firstName}`,
             data: userData
         });
     } catch (error) {
@@ -152,4 +153,4 @@ const verifyLoginOTP = async (req, res) => {
     }
 };
 
-module.exports = {signup,login , logout , verifyLoginOTP , verifyOTP};
+module.exports = {signup,login , logout , verifyOTP};
