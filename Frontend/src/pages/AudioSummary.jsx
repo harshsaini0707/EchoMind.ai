@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState ,useEffect } from 'react';
 import {
   Upload, Play, Pause, Download, FileAudio, Trash2, Volume2
 } from 'lucide-react';
@@ -7,6 +7,15 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const AudioSummary = () => {
+    const navigate = useNavigate();
+  const user = useSelector((store)=>store?.user);
+
+
+
+useEffect(() => {
+  if (!user) navigate("/login");
+}, [user, navigate]);
+
   const [audioFile, setAudioFile] = useState(null);
   const [audioUrl, setAudioUrl] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
@@ -16,7 +25,7 @@ const AudioSummary = () => {
   const [customLanguage, setCustomLanguage] = useState('');
   const fileInputRef = useRef(null);
   const audioRef = useRef(null);
-  const navigate = useNavigate();
+  
 
   const Summary = async () => {
     if (!audioFile) return;

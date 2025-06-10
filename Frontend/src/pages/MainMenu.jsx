@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect } from 'react';
 import {
   FileText,
   Text,
@@ -10,6 +11,13 @@ import axios from 'axios';
 
 const MainMenu = ({children}) => {
   const navigate=  useNavigate();
+  const user = useSelector((store)=>store?.user);
+
+
+
+useEffect(() => {
+  if (!user) navigate("/login");
+}, [user, navigate]);
 
 
   const Logout =  async()=>{

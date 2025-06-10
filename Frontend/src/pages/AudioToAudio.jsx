@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState , useEffect } from 'react';
 import {
   Upload, Play, Pause, Download, FileAudio, Trash2, Volume2
 } from 'lucide-react';
@@ -14,6 +14,16 @@ const languages = [
 ];
 
 const AudioConverter = () => {
+
+    const navigate = useNavigate();
+  const user = useSelector((store)=>store?.user);
+
+
+
+useEffect(() => {
+  if (!user) navigate("/login");
+}, [user, navigate]);
+
   const [audioFile, setAudioFile] = useState(null);
   const [audioUrl, setAudioUrl] = useState('');
   const [convertedAudioUrl, setConvertedAudioUrl] = useState('');
