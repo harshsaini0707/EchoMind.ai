@@ -10,7 +10,7 @@ const cors = require("cors")
 const path = require("path");
 
 app.use(cors({
-  origin:"https://echo-mind-ai.vercel.app", 
+  origin:["https://echo-mind-ai.vercel.app" , "http://localhost:5173"], 
   credentials: true
 }));
 
