@@ -4,6 +4,8 @@ import {
 } from 'lucide-react';
 import MainMenu from './MainMenu';
 import axios from 'axios';
+import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom';
 const languages = [
   { label: 'English (en)', value: 'en' },
   { label: 'Hindi (hi)', value: 'hi' },

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Play, Upload, Languages, Zap, FileText, Clock, Shield, Star, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+
 const DashBoard = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);

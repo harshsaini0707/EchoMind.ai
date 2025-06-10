@@ -1,4 +1,5 @@
 import React, { useRef, useState ,useEffect } from 'react';
+import { useSelector } from 'react-redux'
 import {
   Upload, Play, Pause, Download, FileAudio, Trash2, Volume2
 } from 'lucide-react';
