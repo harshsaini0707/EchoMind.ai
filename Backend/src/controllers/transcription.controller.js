@@ -2,7 +2,7 @@ const cloudinary = require("../utils/cloudinary");
 const Transcription = require("../models/Transcription.model");
 const axios = require("axios"); // Keep for potential other uses or if translateToLanguage uses it
 const streamifier = require("streamifier");
-
+require("dotenv").config()
 const gTTS = require("gtts");
 
 // const textToSpeech = require("@google-cloud/text-to-speech");
@@ -57,7 +57,7 @@ const transcribeAudio = async (req, res) => {
     // --- Google Gemini API for Speech-to-Text ---
 
     // Initialize Gemini client with your API key from environment variables
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
+    const genAI = new GoogleGenerativeAI(process.env.Gemini_KEY);
     
     // Select the model. gemini-1.5-flash is a good choice for multimodal input
     // due to its balance of performance and cost-effectiveness.
@@ -153,7 +153,7 @@ const summarizeAudio = async (req, res) => {
     }
     if(!language)  return res.status(400).json({ message: "Language is required." });
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
+    const genAI = new GoogleGenerativeAI(process.env.Gemini_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const base64Audio = file.buffer.toString("base64");
@@ -217,7 +217,7 @@ const transcribeAudioToAudio = async (req, res) => {
     const audioUrl = uploadResult.secure_url;
 
     // --- Gemini Transcription ---
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
+    const genAI = new GoogleGenerativeAI(process.env.Gemini_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const base64Audio = file.buffer.toString("base64");
 
