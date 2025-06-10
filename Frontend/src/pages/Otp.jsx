@@ -41,7 +41,7 @@ const Otp = () => {
         { withCredentials: true }
       )
 
-      console.log('Verification success:', response.data)
+     // console.log('Verification success:', response.data)
       navigate('/audio-to-text') 
     } catch (err) {
       console.error('OTP verification error:', err)

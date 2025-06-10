@@ -50,23 +50,22 @@ const convertAudioAPI = async () => {
   formData.append('audio', audioFile);
   formData.append('language', effectiveLanguage); // e.g. 'en', 'hi'
 
- const backendOrigin = process.meta.env.VITE_BASE_URL;
 
 try {
   const response = await axios.post(
-    `${process.meta.env.VITE_BASE_URL}/audio/audio-to-audio`,
+    `${import.meta.env.VITE_BASE_URL}/audio/audio-to-audio`,
     formData,
     { withCredentials: true }
   );
 
-  console.log(response.data.translatedAudioUrl);
+  //console.log(response.data.translatedAudioUrl);
 
   if (response.data.translatedAudioUrl) {
     // Fix relative URL by adding backend origin if needed
     let audioUrl = response.data.translatedAudioUrl;
 
     if (audioUrl.startsWith('/')) {
-      audioUrl = backendOrigin + audioUrl;
+      audioUrl = import.meta.env.VITE_BASE_URL + audioUrl;
     }
 
     setConvertedAudioUrl(audioUrl);
