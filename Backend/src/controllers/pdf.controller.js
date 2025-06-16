@@ -14,15 +14,12 @@ const pdfPodCast = async (req, res) => {
     const structuredScript = parseScriptToJSON(script);
     const audioResult = await generateAudioForScript(structuredScript, languageCode);
 
-    // Flatten all audio files into one list
-const allAudioPaths = audioResult.flatMap(line => line.audioUrls);
+   // res.status(200).json({ script: structuredScript, audio: audioResult });
 
-// 🧠 Optional: if you want to concatenate or play in parts, send the full array
-res.status(200).json({
+    res.status(200).json({ 
   script: structuredScript,
-  paragraphs: audioResult,
-  audioUrls: allAudioPaths,  // array of urls
-  languageCode,
+  audio: audioResult,
+  languageCode
 });
 
   } catch (err) {

@@ -89,7 +89,7 @@ const PdfToPodcast = () => {
     const formData = new FormData();
     formData.append("pdf", file);
     formData.append("languageCode", getLanguageCode());
-    formData.append("languageCode", getLanguageName());
+    formData.append("languageName", getLanguageName());
 
     try {
       const response = await axios.post(
@@ -103,11 +103,18 @@ const PdfToPodcast = () => {
         }
       );
 
-    const { script, audio, languageCode } = response.data;
+   const { script, audio = [], languageCode } = response.data;
+
+if (!Array.isArray(audio)) {
+  throw new Error("Invalid response: audio field missing or not an array");
+}
+
 setPodcastScript(script.map(s => `${s.speaker}: ${s.text}`).join('\n\n'));
 setParagraphs(audio); // audio includes audioUrls per paragraph
 
-setAudioURL(audio);
+const firstAudioUrl = audio.find(a => a.audioUrls?.length > 0)?.audioUrls[0] || '';
+setAudioURL(firstAudioUrl);
+
 setSelectedLanguage(languageCode || selectedLanguage);
 
     } catch (error) {
