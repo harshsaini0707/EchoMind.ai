@@ -395,7 +395,8 @@ setSelectedLanguage(languageCode || selectedLanguage);
       <audio
         controls
         className="mt-2"
-        src={`${import.meta.env.VITE_BASE_URL}${line.audioUrls[0]}`}
+        src={line.audioUrls[0].startsWith("http") ? line.audioUrls[0] : `${import.meta.env.VITE_BASE_URL}${line.audioUrls[0]}`}
+
       />
     ) : (
       <span className="text-red-400 text-xs mt-1 block">No audio for this part.</span>
