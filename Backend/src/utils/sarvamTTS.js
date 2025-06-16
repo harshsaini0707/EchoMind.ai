@@ -2,6 +2,7 @@ const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
+require("dotenv").config();
 
 const speakerVoiceMap = {
   Host: "anushka",
@@ -76,7 +77,10 @@ async function generateAudioForScript(scriptLines, languageCode) {
         fs.writeFileSync(filePath, buffer);
         console.log(` Saved: ${filePath}`);
 
-        audioUrls.push(`/audio/${filename}`);
+        const baseURL = process.env.BASE_URL || "http://localhost:9090"; // fallback
+audioUrls.push(`${baseURL}/audio/${filename}`);
+
+       // audioUrls.push(`/audio/${filename}`);
 
       } catch (err) {
         console.error(` TTS failed for line ${id} (${speaker}) chunk ${i}:`, err.response?.data || err.message);
