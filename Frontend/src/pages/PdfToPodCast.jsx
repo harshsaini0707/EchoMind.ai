@@ -11,9 +11,9 @@ const PdfToPodcast = () => {
   const navigate = useNavigate();
   const user = useSelector((store) => store?.user);
 
-  useEffect(() => {
-    if (!user) navigate("/login");
-  }, [user, navigate]);
+//   useEffect(() => {
+//     if (!user) navigate("/login");
+//   }, [user, navigate]);
 
   const [file, setFile] = useState(null);
   const [audioURL, setAudioURL] = useState('');
@@ -103,12 +103,13 @@ const PdfToPodcast = () => {
         }
       );
 
-      const { data } = response.data;
-      setPodcastScript(data.script);
-      const scriptParagraphs = data.script.split('\n\n').filter(p => p.trim());
-      setParagraphs(scriptParagraphs);
-      setAudioURL(data.audioUrl);
-      setSelectedLanguage(data.languageCode || selectedLanguage);
+    const { script, audio, languageCode } = response.data;
+setPodcastScript(script.map(s => `${s.speaker}: ${s.text}`).join('\n\n'));
+setParagraphs(audio); // audio includes audioUrls per paragraph
+
+setAudioURL(audio);
+setSelectedLanguage(languageCode || selectedLanguage);
+
     } catch (error) {
       if (error?.response?.status === 401) {
         return navigate("/login");
@@ -360,30 +361,17 @@ const PdfToPodcast = () => {
                       <strong>Generated in:</strong> {getLanguageName()} ({getLanguageCode()})
                     </p>
                   </div>
-                  {paragraphs.map((paragraph, index) => (
-                    <div
-                      key={index}
-                      className={`p-3 rounded-lg transition-all duration-300 ${
-                        index === currentParagraph && isPlaying
-                          ? 'bg-purple-500/30 border-l-4 border-purple-400 shadow-lg'
-                          : 'bg-white/5'
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-xs text-gray-400">Paragraph {index + 1}</span>
-                        {index === currentParagraph && isPlaying && (
-                          <span className="text-xs text-purple-300 animate-pulse">● Playing</span>
-                        )}
-                      </div>
-                      <p className={`text-gray-200 leading-relaxed ${
-                        index === currentParagraph && isPlaying
-                          ? 'text-white font-medium'
-                          : ''
-                      }`}>
-                        {paragraph}
-                      </p>
-                    </div>
-                  ))}
+{line.audioUrls?.length > 0 ? (
+  <audio
+    controls
+    className="mt-2"
+    src={`${import.meta.env.VITE_BASE_URL}${line.audioUrls[0]}`}
+  />
+) : (
+  <span className="text-red-400 text-sm">Audio not available</span>
+)}
+
+
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-full">
