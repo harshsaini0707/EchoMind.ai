@@ -361,16 +361,40 @@ setSelectedLanguage(languageCode || selectedLanguage);
                       <strong>Generated in:</strong> {getLanguageName()} ({getLanguageCode()})
                     </p>
                   </div>
-{line.audioUrls?.length > 0 ? (
-  <audio
-    controls
-    className="mt-2"
-    src={`${import.meta.env.VITE_BASE_URL}${line.audioUrls[0]}`}
-  />
-) : (
-  <span className="text-red-400 text-sm">Audio not available</span>
-)}
+{paragraphs.map((line, index) => (
+  <div
+    key={line.id || index}
+    className={`p-3 rounded-lg transition-all duration-300 ${
+      index === currentParagraph && isPlaying
+        ? 'bg-purple-500/30 border-l-4 border-purple-400 shadow-lg'
+        : 'bg-white/5'
+    }`}
+  >
+    <div className="flex justify-between items-start mb-2">
+      <span className="text-xs text-gray-400">Paragraph {index + 1}</span>
+      {index === currentParagraph && isPlaying && (
+        <span className="text-xs text-purple-300 animate-pulse">● Playing</span>
+      )}
+    </div>
 
+    <p className={`text-gray-200 leading-relaxed ${
+      index === currentParagraph && isPlaying ? 'text-white font-medium' : ''
+    }`}>
+      <strong>{line.speaker}:</strong> {line.text}
+    </p>
+
+    {/* ✅ SAFE AUDIO PLAYER */}
+    {line.audioUrls?.[0] ? (
+      <audio
+        controls
+        className="mt-2"
+        src={`${import.meta.env.VITE_BASE_URL}${line.audioUrls[0]}`}
+      />
+    ) : (
+      <span className="text-red-400 text-xs mt-1 block">No audio for this part.</span>
+    )}
+  </div>
+))}
 
                 </div>
               ) : (
