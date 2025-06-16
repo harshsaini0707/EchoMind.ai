@@ -58,7 +58,7 @@ async function generateAudioForScript(scriptLines, languageCode) {
           },
           {
             headers: {
-              "api-subscription-key": process.env.SARVAM_API_KEY,
+              "api-subscription-key": process.env.Sarvam_Subcription_Key,
               "Content-Type": "application/json"
             }
           }
