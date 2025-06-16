@@ -77,10 +77,8 @@ async function generateAudioForScript(scriptLines, languageCode) {
         fs.writeFileSync(filePath, buffer);
         console.log(` Saved: ${filePath}`);
 
-        const baseURL = process.env.BASE_URL || "http://localhost:9090"; // fallback
-audioUrls.push(`${baseURL}/audio/${filename}`);
 
-       // audioUrls.push(`/audio/${filename}`);
+        audioUrls.push(`/audio/${filename}`);
 
       } catch (err) {
         console.error(` TTS failed for line ${id} (${speaker}) chunk ${i}:`, err.response?.data || err.message);
