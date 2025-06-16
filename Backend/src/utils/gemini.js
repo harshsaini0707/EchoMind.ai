@@ -10,7 +10,7 @@ You are an expert translator and storyteller.
 
 Translate the following transcription into ${languageCode} in a natural, warm, and emotional way. Make it sound like a real conversation, full of feelings such as excitement, nervousness, happiness, or surprise, depending on the context.
 
-⚠️ Important instructions:
+ Important instructions:
 - If name us mention than that is good but if name is not mention take any indian name
 - Output the result only.
 - Mention the name is each paragraph of persons who are taken part in conversation and don't add emotions in result .

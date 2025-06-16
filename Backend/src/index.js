@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser")
 const transcriptionRoutes = require("./routes/transcription.routes")
 const cors = require("cors")
 const path = require("path");
+const pdfRoute = require("./routes/pdf.routes");
 
 app.use(cors({
   origin:["https://echo-mind-ai.vercel.app" , "http://localhost:5173"], 
@@ -15,12 +16,17 @@ app.use(cors({
 }));
 
 app.use(express.json())
+
+
 app.use("/public", express.static(path.join(__dirname, "public"))); // to serve TTS audio
+app.use("/audio", express.static(path.join(__dirname, "public/audio")));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()) 
 
 app.use("/auth",authRouter);
 app.use("/audio", transcriptionRoutes);
+app.use("/pdf",pdfRoute)
 
 
 

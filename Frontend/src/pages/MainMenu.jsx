@@ -4,7 +4,8 @@ import {
   FileText,
   Text,
   Repeat,
-  CircleArrowOutUpLeft 
+  CircleArrowOutUpLeft, 
+  Mic
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -68,6 +69,26 @@ useEffect(() => {
 
 
           <button 
+          // onClick={Logout}
+            onClick={()=>navigate("/pdf-summary")}
+          className="flex items-center gap-3 text-left font-semibold text-sm text-slate-200  border p-3 rounded-2xl border-transparent hover:bg-yellow-500/20 focus:bg-yellow-500/20 transition-all duration-300">
+            <div className={`w-10 h-10 flex items-center justify-center rounded-lg bg-yellow-500/40`}>
+              <FileText  className="w-6 h-6 text-yellow-300 " />
+            </div>
+            Pdf Summary
+          </button>
+
+<button 
+           //onClick={Logout}
+             onClick={()=>navigate("/pdfPodCast")}
+          className="flex items-center gap-3 text-left font-semibold text-sm text-slate-200  border p-3 rounded-2xl border-transparent hover:bg-purple-500/40 focus:bg-purple-500/30 transition-all duration-300">
+            <div className={`w-10 h-10 flex items-center justify-center rounded-lg bg-purple-500/70`}>
+              <Mic  className="w-6 h-6" />
+            </div>
+            Pdf To PodCast
+          </button>
+
+          <button 
            onClick={Logout}
           className="flex items-center gap-3 text-left font-semibold text-sm text-slate-200  border p-3 rounded-2xl border-transparent hover:bg-red-500/20 focus:bg-red-500/20 transition-all duration-300">
             <div className={`w-10 h-10 flex items-center justify-center rounded-lg bg-red-500/40`}>
@@ -75,6 +96,7 @@ useEffect(() => {
             </div>
             Logout
           </button>
+
         </div>
       </div>
 

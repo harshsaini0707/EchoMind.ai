@@ -311,12 +311,6 @@ await new Promise((resolve, reject) => {
   }
 };
 
-
-
-
-
-
-
 const getUserHistory = async (req, res) => {
   try {
     const user = req.user;

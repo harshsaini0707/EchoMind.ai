@@ -11,6 +11,8 @@ import MainMenu from './pages/MainMenu'
 import AudioToText from './pages/AudioToText'
 import AudioSummary from './pages/AudioSummary'
 import AudioToAudio from './pages/AudioToAudio'
+import PdfSummary from './pages/PdfSummary'
+import PdfToPodCast from './pages/PdfToPodCast'
 
 
 const App = () => {
@@ -28,6 +30,8 @@ const App = () => {
     <Route path='/audio-to-text' element={<AudioToText/>} />
     <Route path='/audio-to-summary' element={<AudioSummary/>} />
     <Route path='/audio-to-audio' element={<AudioToAudio/>} />
+    <Route path='/pdf-summary' element={<PdfSummary/>}/>
+    <Route path='/pdfPodCast' element={<PdfToPodCast/>} />  
     
   </Routes>
   </BrowserRouter>
