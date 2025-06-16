@@ -14,7 +14,17 @@ const pdfPodCast = async (req, res) => {
     const structuredScript = parseScriptToJSON(script);
     const audioResult = await generateAudioForScript(structuredScript, languageCode);
 
-    res.status(200).json({ script: structuredScript, audio: audioResult });
+    // Flatten all audio files into one list
+const allAudioPaths = audioResult.flatMap(line => line.audioUrls);
+
+// 🧠 Optional: if you want to concatenate or play in parts, send the full array
+res.status(200).json({
+  script: structuredScript,
+  paragraphs: audioResult,
+  audioUrls: allAudioPaths,  // array of urls
+  languageCode,
+});
+
   } catch (err) {
     console.error("Error generating script:", err);
     res.status(500).json({ message: "Failed to generate podcast script" });
