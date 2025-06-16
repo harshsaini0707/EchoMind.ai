@@ -5,7 +5,8 @@ const genAI = new GoogleGenerativeAI(Gemini_KEY);
 
 function buildPrompt(text, languageCode) {
   return `
-You are a professional podcast script writer who writes in ${languageCode}.
+You are a professional podcast script writer. Write the podcast in the language code: "${languageCode}".
+
 
 Task:
 Generate a full, detailed podcast script from the following document.
@@ -20,6 +21,7 @@ Important Instructions:
 - Avoid unnecessary over-translation of scientific terms.
 
 Podcast Style Guidelines:
+- Translate the text to the given language code (${languageCode}) while keeping technical terms (e.g. AGI, AI, GPT) in English.
 - Make the conversation natural, friendly, and informative.
 - Keep each exchange short but clear — like a real podcast dialogue.
 - Avoid or simplify technical jargon unless it’s explained clearly.

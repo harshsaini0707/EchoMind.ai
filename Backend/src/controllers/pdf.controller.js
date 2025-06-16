@@ -6,7 +6,7 @@ const generateAudioForScript = require("../utils/sarvamTTS")
 const pdfPodCast = async (req, res) => {
   try {
     const buffer = req.file.buffer; // access in-memory PDF
-    const languageCode = req.body.languageCode || 'en-IN'; // default if not set
+    const languageCode = req.body.languageCode || 'hi-IN'; // default if not set
 
     const data = await pdfParse(buffer); // parse text
     const extractedText = data.text;

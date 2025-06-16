@@ -33,7 +33,7 @@ const PdfToPodcast = () => {
   // Language options with codes
   const languageOptions = [
     { code: 'en', name: 'English' },
-    { code: 'hi', name: 'Hindi' },
+    { code: 'hi-IN', name: 'Hindi' },
     { code: 'bn', name: 'Bengali' },
     { code: 'te', name: 'Telugu' },
     { code: 'mr', name: 'Marathi' },
@@ -88,8 +88,8 @@ const PdfToPodcast = () => {
 
     const formData = new FormData();
     formData.append("pdf", file);
-    formData.append("language", getLanguageCode());
-    formData.append("languageName", getLanguageName());
+    formData.append("languageCode", getLanguageCode());
+    formData.append("languageCode", getLanguageName());
 
     try {
       const response = await axios.post(
