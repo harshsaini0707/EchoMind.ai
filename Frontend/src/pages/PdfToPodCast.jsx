@@ -11,12 +11,13 @@ const PdfToPodcast = () => {
   const navigate = useNavigate();
   const user = useSelector((store) => store?.user);
 
-//   useEffect(() => {
-//     if (!user) navigate("/login");
-//   }, [user, navigate]);
+  // You can uncomment this useEffect if user authentication is required
+  useEffect(() => {
+    if (!user) navigate("/login");
+  }, [user, navigate]);
 
   const [file, setFile] = useState(null);
-  const [audioURL, setAudioURL] = useState('');
+  const [audioURL, setAudioURL] = useState(''); // This will be the current audio segment being played by the main player
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -24,11 +25,14 @@ const PdfToPodcast = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [customLanguage, setCustomLanguage] = useState('');
-  const [currentParagraph, setCurrentParagraph] = useState(0);
-  const [paragraphs, setParagraphs] = useState([]);
+  const [currentParagraph, setCurrentParagraph] = useState(0); // This will track the currently highlighted paragraph
+  const [paragraphs, setParagraphs] = useState([]); // Stores speaker, text, and audioUrls for each paragraph
+
+  const [audioQueue, setAudioQueue] = useState([]); // Stores all individual audio URLs in sequence
+  const [currentAudioIndex, setCurrentAudioIndex] = useState(0); // Index for the audioQueue
 
   const fileInputRef = useRef(null);
-  const audioRef = useRef(null);
+  const audioRef = useRef(null); // Ref for the single main audio player
 
   // Language options with codes
   const languageOptions = [
@@ -103,19 +107,30 @@ const PdfToPodcast = () => {
         }
       );
 
-   const { script, audio = [], languageCode } = response.data;
+      const { script, audio = [], languageCode } = response.data;
 
-if (!Array.isArray(audio)) {
-  throw new Error("Invalid response: audio field missing or not an array");
-}
+      if (!Array.isArray(audio)) {
+        throw new Error("Invalid response: audio field missing or not an array");
+      }
 
-setPodcastScript(script.map(s => `${s.speaker}: ${s.text}`).join('\n\n'));
-setParagraphs(audio); // audio includes audioUrls per paragraph
+      // Set the full script for display
+      setPodcastScript(script.map(s => `${s.speaker}: ${s.text}`).join('\n\n'));
+      // Store paragraph data including audio URLs for queuing and highlighting
+      setParagraphs(audio);
 
-const firstAudioUrl = audio.find(a => a.audioUrls?.length > 0)?.audioUrls[0] || '';
-setAudioURL(firstAudioUrl);
+      // Create a flat queue of all audio URLs from the paragraphs
+      const queue = audio.flatMap(p => p.audioUrls || []);
+      setAudioQueue(queue);
 
-setSelectedLanguage(languageCode || selectedLanguage);
+      // Reset audio playback states
+      setCurrentAudioIndex(0);
+      setAudioURL(queue[0] || ''); // Set the first audio segment to the main player
+      setIsPlaying(false); // Do not auto-play immediately after generation
+      setCurrentTime(0);
+      setDuration(0);
+      setCurrentParagraph(0); // Start highlighting from the first paragraph
+
+      setSelectedLanguage(languageCode || selectedLanguage);
 
     } catch (error) {
       if (error?.response?.status === 401) {
@@ -133,12 +148,20 @@ setSelectedLanguage(languageCode || selectedLanguage);
     const selected = e.target.files[0];
     if (selected?.type === 'application/pdf') {
       setFile(selected);
+      // Reset all related states when a new file is selected
       setPodcastScript('');
       setParagraphs([]);
       setCurrentTime(0);
       setDuration(0);
       setCurrentParagraph(0);
       setAudioURL('');
+      setAudioQueue([]);
+      setCurrentAudioIndex(0);
+      setIsPlaying(false);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
     } else {
       alert('Please select a PDF file.');
     }
@@ -147,23 +170,59 @@ setSelectedLanguage(languageCode || selectedLanguage);
   const togglePlay = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    isPlaying ? audio.pause() : audio.play();
+
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      if (audioQueue.length === 0) {
+        // No audio generated yet
+        return alert("Please generate the podcast first.");
+      }
+
+      // If audioURL is empty (e.g., first play after generation or file reset),
+      // set it to the current audio segment in the queue.
+      if (!audioURL && audioQueue[currentAudioIndex]) {
+        setAudioURL(audioQueue[currentAudioIndex]);
+        // A small delay to ensure audioURL is updated before playing
+        setTimeout(() => audio.play(), 100);
+      } else {
+        audio.play();
+      }
+    }
     setIsPlaying(!isPlaying);
   };
+
+  // Update currentParagraph state to match currentAudioIndex for highlighting
+  useEffect(() => {
+    setCurrentParagraph(currentAudioIndex);
+    // When the audioURL changes (meaning a new segment is loaded for playback),
+    // if the player was already playing, try to play the new segment.
+    if (isPlaying && audioRef.current && audioURL) {
+      audioRef.current.play().catch(e => console.error("Error playing audio segment:", e));
+    }
+  }, [currentAudioIndex, audioURL, isPlaying]);
+
 
   const getLanguageCode = () =>
     selectedLanguage === 'custom' ? customLanguage : selectedLanguage;
 
   const getLanguageName = () => {
     const lang = languageOptions.find(l => l.code === selectedLanguage);
-    return selectedLanguage === 'custom' ? customLanguage : (lang?.name || 'English');
+    return selectedLanguage === 'custom' ? customLanguage : (lang?.name || '');
   };
 
   const downloadPodcast = () => {
+    // This function downloads only the *currently set* audioURL, which is one segment.
+    // For a full podcast download, the backend would need to provide a single concatenated MP3.
+    // As per the current implementation where audio is fetched segment by segment,
+    // this would download the last played segment.
+    // To download the *entire* podcast, you'd need a separate endpoint from your backend
+    // that concatenates all audio segments into a single file and provides a URL for it.
     if (!audioURL) return alert("No podcast audio to download.");
+    alert("This will download the currently loaded audio segment. For the full podcast, a separate download feature needs to be implemented backend.");
     const a = document.createElement('a');
     a.href = audioURL;
-    a.download = 'podcast.mp3';
+    a.download = `podcast_segment_${currentAudioIndex + 1}.mp3`;
     a.click();
   };
 
@@ -180,15 +239,6 @@ setSelectedLanguage(languageCode || selectedLanguage);
 
   const formatTime = (time) =>
     `${Math.floor(time / 60)}:${String(Math.floor(time % 60)).padStart(2, '0')}`;
-
-  // Update current paragraph based on audio time
-  useEffect(() => {
-    if (paragraphs.length > 0 && duration > 0) {
-      const timePerParagraph = duration / paragraphs.length;
-      const newParagraph = Math.floor(currentTime / timePerParagraph);
-      setCurrentParagraph(Math.min(newParagraph, paragraphs.length - 1));
-    }
-  }, [currentTime, duration, paragraphs.length]);
 
   return (
     <MainMenu>
@@ -212,6 +262,16 @@ setSelectedLanguage(languageCode || selectedLanguage);
                     setAudioURL('');
                     setPodcastScript('');
                     setParagraphs([]);
+                    setIsPlaying(false);
+                    setCurrentTime(0);
+                    setDuration(0);
+                    setCurrentParagraph(0);
+                    setAudioQueue([]);
+                    setCurrentAudioIndex(0);
+                    if (audioRef.current) {
+                      audioRef.current.pause();
+                      audioRef.current.currentTime = 0;
+                    }
                   }}
                   className="text-red-400 hover:text-red-300"
                 >
@@ -290,21 +350,41 @@ setSelectedLanguage(languageCode || selectedLanguage);
               {isGenerating ? 'Generating Podcast...' : 'Generate Podcast'}
             </button>
 
-            {/* Audio Player */}
-            {audioURL && (
+            {/* Main Audio Player */}
+            {(audioQueue.length > 0 || isGenerating) && ( // Show player if audio generated or is being generated
               <div className="space-y-3">
                 <audio
                   ref={audioRef}
-                  src={audioURL}
-                  onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
-                  onLoadedMetadata={() => setDuration(audioRef.current.duration)}
-                  onEnded={() => setIsPlaying(false)}
-                  hidden
+                  // The src is controlled by audioURL state, which is updated from audioQueue
+                  src={audioURL.startsWith("http") ? audioURL : `${import.meta.env.VITE_BASE_URL}${audioURL}`}
+                  onTimeUpdate={() => {
+                    if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
+                  }}
+                  onLoadedMetadata={() => {
+                    if (audioRef.current) setDuration(audioRef.current.duration);
+                  }}
+                  onEnded={() => {
+                    if (currentAudioIndex < audioQueue.length - 1) {
+                      const nextIndex = currentAudioIndex + 1;
+                      setCurrentAudioIndex(nextIndex);
+                      // Update audioURL to trigger loading of the next segment
+                      setAudioURL(audioQueue[nextIndex]);
+                      // Auto-play the next segment is handled by useEffect after audioURL updates
+                    } else {
+                      setIsPlaying(false); // All segments played
+                      setCurrentAudioIndex(0); // Reset for next full play-through
+                      setCurrentTime(0); // Reset time for next play-through
+                      setAudioURL(audioQueue[0] || ''); // Reset to first audio for replay
+                    }
+                  }}
+                  hidden // Keep it hidden, control with custom UI
                 />
+
                 <div className="flex items-center gap-4">
                   <button
                     onClick={togglePlay}
-                    className="bg-purple-600 p-3 rounded-full text-white hover:bg-purple-700"
+                    disabled={audioQueue.length === 0 && !isGenerating}
+                    className="bg-purple-600 p-3 rounded-full text-white hover:bg-purple-700 disabled:bg-gray-700 disabled:text-gray-400"
                   >
                     {isPlaying ? <Pause size={20} /> : <Play size={20} />}
                   </button>
@@ -323,11 +403,13 @@ setSelectedLanguage(languageCode || selectedLanguage);
                 </div>
                 <button
                   onClick={downloadPodcast}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition"
+                  disabled={!audioURL}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition disabled:bg-gray-700 disabled:text-gray-400"
                 >
                   <Download size={18} className="inline-block mr-2" />
-                  Download Podcast
+                  Download Current Segment
                 </button>
+                {/* Note: A "Download Full Podcast" button would require a separate backend endpoint */}
               </div>
             )}
           </div>
@@ -349,8 +431,8 @@ setSelectedLanguage(languageCode || selectedLanguage);
                 </button>
               )}
             </div>
-            
-            <div className="bg-white/5 rounded-lg p-4 h-96 overflow-y-auto hide-scrollbar">
+
+            <div className="bg-white/5 rounded-lg  h-100 overflow-y-auto hide-scrollbar">
               {isGenerating ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
@@ -368,41 +450,30 @@ setSelectedLanguage(languageCode || selectedLanguage);
                       <strong>Generated in:</strong> {getLanguageName()} ({getLanguageCode()})
                     </p>
                   </div>
-{paragraphs.map((line, index) => (
-  <div
-    key={line.id || index}
-    className={`p-3 rounded-lg transition-all duration-300 ${
-      index === currentParagraph && isPlaying
-        ? 'bg-purple-500/30 border-l-4 border-purple-400 shadow-lg'
-        : 'bg-white/5'
-    }`}
-  >
-    <div className="flex justify-between items-start mb-2">
-      <span className="text-xs text-gray-400">Paragraph {index + 1}</span>
-      {index === currentParagraph && isPlaying && (
-        <span className="text-xs text-purple-300 animate-pulse">● Playing</span>
-      )}
-    </div>
+                  {paragraphs.map((line, index) => (
+                    <div
+                      key={line.id || index}
+                      className={`p-3 rounded-lg transition-all duration-300 ${
+                        index === currentParagraph && isPlaying // Highlight based on currentParagraph and playing status
+                          ? 'bg-green-500/30 border-l-4 border-green-400 shadow-lg'
+                          : 'bg-white/5'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-xs text-gray-400">Paragraph {index + 1}</span>
+                        {index === currentParagraph && isPlaying && (
+                          <span className="text-xs text-purple-300 animate-pulse">● Playing</span>
+                        )}
+                      </div>
 
-    <p className={`text-gray-200 leading-relaxed ${
-      index === currentParagraph && isPlaying ? 'text-white font-medium' : ''
-    }`}>
-      <strong>{line.speaker}:</strong> {line.text}
-    </p>
-
-    {/* ✅ SAFE AUDIO PLAYER */}
-    {line.audioUrls?.[0] ? (
-      <audio
-        controls
-        className="mt-2"
-        src={line.audioUrls[0].startsWith("http") ? line.audioUrls[0] : `${import.meta.env.VITE_BASE_URL}${line.audioUrls[0]}`}
-
-      />
-    ) : (
-      <span className="text-red-400 text-xs mt-1 block">No audio for this part.</span>
-    )}
-  </div>
-))}
+                      <p className={`text-gray-200 leading-relaxed ${
+                        index === currentParagraph && isPlaying ? 'text-white font-medium' : ''
+                      }`}>
+                        <strong>{line.speaker}:</strong> {line.text}
+                      </p>
+                      {/* Removed the individual <audio> player here */}
+                    </div>
+                  ))}
 
                 </div>
               ) : (
