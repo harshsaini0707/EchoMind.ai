@@ -188,7 +188,7 @@ useEffect(() => {
                   onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
                   onLoadedMetadata={() => setDuration(audioRef.current.duration)}
                   onEnded={() => setIsPlaying(false)}
-                  hidden
+                  hidden 
                 />
                 <div className="flex items-center gap-4">
                   <button

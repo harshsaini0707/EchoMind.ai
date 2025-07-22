@@ -50,7 +50,7 @@ async function generatePodcastScript(text , languageCode) {
   const result = await model.generateContent(prompt);
   const response = await result.response;
   const script = response.text();
-  console.log(script);
+  //console.log(script);
   
   return script;
 }

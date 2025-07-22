@@ -18,6 +18,8 @@ Translate the following transcription into ${languageCode} in a natural, warm, a
 - Use casual, natural language that a person would actually say.
 - Add subtle emotional expressions or pauses where appropriate to make the text feel alive and engaging.
 - Keep the meaning accurate but enhance the emotional and conversational tone.
+- Not use *like this* or **like this**
+-Instead, format the text normally, without markdown or emphasis indicators
 
 Here is the original transcription:
 ${text}
@@ -29,7 +31,7 @@ ${text}
     return translated;
   } catch (err) {
     console.error("Gemini translation error:", err);
-    return text; // fallback if Gemini fails
+    return text; 
   }
 };
 

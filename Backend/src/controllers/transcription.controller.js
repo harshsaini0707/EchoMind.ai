@@ -1,43 +1,30 @@
 const cloudinary = require("../utils/cloudinary");
 const Transcription = require("../models/Transcription.model");
-const axios = require("axios"); // Keep for potential other uses or if translateToLanguage uses it
 const streamifier = require("streamifier");
 require("dotenv").config()
 const gTTS = require("gtts");
-
-// const textToSpeech = require("@google-cloud/text-to-speech");
-// const util = require("util");
-
-const translateToLanguage = require("../utils/gemini"); // Assuming this utility handles text translation via Gemini
-
-// Ensure you have the Google Generative AI SDK installed: npm install @google/generative-ai
+const translateToLanguage = require("../utils/gemini"); 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
- // Retained from original, assuming its purpose is elsewhere or for future large file handling
+
 const fs = require("fs");
 const path = require("path");
 
 const transcribeAudio = async (req, res) => {
   try {
     const { language } = req.body;
-    const file = req.file; // This 'file' object typically contains buffer, mimetype, originalname
+    const file = req.file; 
     const user = req.user;
 
-    // --- Input Validation ---
     if (!user) {
       return res.status(401).json({ message: "Unauthorized user!" });
     }
     if (!file) {
       return res.status(400).json({ message: "Audio file is required." });
     }
-    // 'language' here is expected to be the target language for the final translation,
-    // not necessarily the original spoken language of the audio for transcription.
     if (!language) {
       return res.status(400).json({ message: "Target language for translation is required." });
     }
-
-    // --- Upload to Cloudinary (Existing Logic) ---
-    // This uploads the original audio file to Cloudinary and gets a URL.
-    // Cloudinary usually treats audio files under 'video' resource_type.
+    //Cloudinary Upload
     const streamUpload = () => {
       return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
@@ -54,25 +41,15 @@ const transcribeAudio = async (req, res) => {
     const uploadResult = await streamUpload();
     const audioUrl = uploadResult.secure_url;
 
-    // --- Google Gemini API for Speech-to-Text ---
-
-    // Initialize Gemini client with your API key from environment variables
+    //STT
     const genAI = new GoogleGenerativeAI(process.env.Gemini_KEY);
-    
-    // Select the model. gemini-1.5-flash is a good choice for multimodal input
-    // due to its balance of performance and cost-effectiveness.
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    // Convert the audio buffer to a base64 string.
-    // Gemini API expects inline audio data in base64 format.
+  
     const base64Audio = file.buffer.toString('base64');
-    const mimeType = file.mimetype; // Use the actual MIME type of the uploaded file
-
-    // Construct the prompt for Gemini.
-    // Since Gemini is a multimodal LLM, you need to explicitly tell it to transcribe.
-    // The audio data is sent as an 'inlineData' part within the 'contents' array.
+    const mimeType = file.mimetype; 
     const parts = [
-      { text: "Transcribe the following audio accurately:" }, // The instruction for transcription
+      { text: "Transcribe the following audio accurately:" }, 
       {
         inlineData: {
           mimeType: mimeType,
@@ -81,17 +58,12 @@ const transcribeAudio = async (req, res) => {
       },
     ];
 
-    // Important: For very large audio files (total request size > 20MB including prompt),
-    // you would typically upload to Google Cloud Storage first and provide the URI to Gemini.
-    // For most user-uploaded files via a web form, inlineData is often sufficient.
-
-    console.log("Sending audio to Gemini for transcription...");
     const geminiSTTResponse = await model.generateContent({
       contents: [{ parts: parts }],
     });
 
-    // Extract the transcription from Gemini's response
-    // The response structure might vary slightly, so robust error checking is good.
+    
+
     let transcription = "";
     if (geminiSTTResponse.response && 
         geminiSTTResponse.response.candidates && 
@@ -106,22 +78,14 @@ const transcribeAudio = async (req, res) => {
       return res.status(502).json({ message: "Failed to get valid transcription from Gemini AI." });
     }
 
-    console.log("Original Transcription (via Gemini):", transcription);
 
-    // --- Gemini Translation (Existing Logic) ---
-    // This assumes 'translateToLanguage' is a utility function that uses Gemini's text translation capabilities
-    // to translate the transcribed text into the target 'language' specified by the user.
     const translatedText = await translateToLanguage(transcription, language);
-    console.log("Gemini Translate:", translatedText);
+    //console.log("Gemini Translate:", translatedText);
 
-    // --- Save to Database ---
     const saved = await Transcription.create({
       user: user._id,
       audioUrl,
-      // Store the translated text as the primary 'transcribedText' for this record.
-      // If you want to store both original transcription and translated, you'd adjust your model.
-      transcribedText: translatedText, 
-      language, // This 'language' is the target language of the translation
+      language, 
     });
 
     return res.status(200).json({
@@ -130,8 +94,8 @@ const transcribeAudio = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("Error during transcription and translation:", err); // Log the full error for debugging
-    // Provide a more informative error message to the client
+    console.error("Error during transcription and translation:", err);
+ 
     const errorMessage = err.response?.data || err.message || "An unknown error occurred.";
     return res.status(500).json({
       message: "Internal Server Error during AI processing.",
@@ -159,7 +123,7 @@ const summarizeAudio = async (req, res) => {
     const base64Audio = file.buffer.toString("base64");
 
     const prompt = [
-      { text: `Listen to the following audio and give a summary in 5-6 lines: in ${language}.  Please respond ONLY in ${language}.` },
+      { text: `Listen to the following audio and give a best summary: in ${language}.  Please respond ONLY in ${language}.` },
       {
         inlineData: {
           mimeType: file.mimetype,

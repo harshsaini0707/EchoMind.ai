@@ -16,7 +16,7 @@ const transcriptionSchema = new mongoose.Schema({
      },
      summaryText: {
      type: String,
-     default: null, // optional: can be null if not generated
+     default: null, 
   },
      language:{
         type:String,

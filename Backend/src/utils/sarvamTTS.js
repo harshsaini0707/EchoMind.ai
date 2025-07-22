@@ -30,11 +30,10 @@ function chunkText(text, maxLen = 1500) {
 async function generateAudioForScript(scriptLines, languageCode) {
   const results = [];
 
-  // 🛡️ Ensure directory exists
   const audioDir = path.join(__dirname, "../public/audio");
   if (!fs.existsSync(audioDir)) {
     fs.mkdirSync(audioDir, { recursive: true });
-    console.log(" Created /public/audio directory");
+   // console.log(" Created /public/audio directory");
   }
 
   for (const line of scriptLines) {
@@ -75,7 +74,7 @@ async function generateAudioForScript(scriptLines, languageCode) {
         const filePath = path.join(audioDir, filename);
 
         fs.writeFileSync(filePath, buffer);
-        console.log(` Saved: ${filePath}`);
+        //console.log(` Saved: ${filePath}`);
 
         
 

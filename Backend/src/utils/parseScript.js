@@ -5,7 +5,6 @@ function parseScriptToJSON(scriptText) {
   let id = 1;
 
   for (const line of lines) {
-    // Match English or Hindi speakers like **Host:** or **होस्ट:**
     const match = line.match(/^\**\*?(Host|Expert|होस्ट|विशेषज्ञ)\**\*?\s*[:\-–—]\s*(.+)$/i);
 
     if (match) {
@@ -18,7 +17,7 @@ function parseScriptToJSON(scriptText) {
     }
   }
 
-  console.log("🧾 Parsed Script Lines:", parsed);
+ // console.log("Parsed Script Lines:", parsed);
   return parsed;
 }
 
